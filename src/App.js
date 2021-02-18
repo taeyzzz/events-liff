@@ -1,35 +1,28 @@
 import React, { useState, useEffect } from 'react'
-import liff from '@line/liff';
 
 import "./global-style.scss"
+
+const liff = window.liff;
 
 function App() {
   const [userData, setUserData] = useState(undefined)
   const [message, setMessage] = useState("")
-  const [status, setStatus] = useState("idle")
+  const [isInLiff, setIsInLiff] = useState(false)
 
   useEffect(() => {
     initialize()
   }, [])
 
   const initialize = async () => {
-    try {
-      setStatus("init")
-      await liff.init({ liffId: process.env.REACT_APP_LIFF_ID });
-      if (!liff.isLoggedIn()) {
-        setStatus("start login")
-        liff.login({ redirectUri: process.env.REACT_APP_REDIRECT_URI });
-      }
-      setStatus('get profile');
-      const profileData = await liff.getProfile()
-      setStatus('get accessToken');
-      const accessToken = liff.getAccessToken();
-      setUserData(profileData)
-    } catch (e) {
-      console.log(e);
-      setStatus("init failure")
+    await liff.init({ liffId: process.env.REACT_APP_LIFF_ID });
+    if (!liff.isLoggedIn()) {
+      liff.login({ redirectUri: process.env.REACT_APP_REDIRECT_URI });
     }
-
+    const profileData = await liff.getProfile()
+    const accessToken = liff.getAccessToken();
+    setUserData(profileData)
+    const isInLiffBrowser = liff.isInClient()
+    setIsInLiff(isInLiffBrowser)
   }
 
   const handleMessageChanged = (e) => {
@@ -49,9 +42,6 @@ function App() {
   return (
     <div className="application-container">
       Hello
-      <div>
-        status: {status}
-      </div>
       <div>
         Welcome to LIFF
       </div>
